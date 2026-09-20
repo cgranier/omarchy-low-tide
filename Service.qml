@@ -33,8 +33,42 @@ Item {
     // the charger device, and some hardware (a Surface Pro 4, for one) reports
     // "on-battery: no" while unplugged and draining. Requiring it would mean
     // never alerting at all on exactly the machines that need this most.
-    discharging: !!(device && device.isPresent && device.state === UPowerDeviceState.Discharging)
+    discharging: !!(device && device.isPresent && device.state === UPowerDeviceState.Discharging) && kernelDischarging
   })
+
+  // UPower can take several seconds to notice a charger going in (on some
+  // hardware it misses the event altogether until something makes it re-read).
+  // That lag is harmless for raising an alert, but not for taking one down: a
+  // charger plugged in during the last seconds of the countdown has to stop it.
+  // So while an alert or countdown is live, the kernel's own battery status is
+  // read directly. It can only ever stand things down sooner, never raise them.
+  property bool kernelDischarging: true
+  readonly property bool watchingKernel: !simulated && (tide.announced >= 0 || tide.countdownEndsAt > 0)
+  onWatchingKernelChanged: if (!watchingKernel) kernelDischarging = true
+
+  Timer {
+    interval: 1000
+    repeat: true
+    running: root.watchingKernel
+    triggeredOnStart: true
+    onTriggered: if (!kernelProcess.running) kernelProcess.running = true
+  }
+
+  Process {
+    id: kernelProcess
+    running: false
+    command: ["sh", "-c", 'for d in /sys/class/power_supply/*/; do [ "$(cat "$d/type" 2>/dev/null)" = Battery ] && cat "$d/status" 2>/dev/null; done; exit 0']
+    stdout: StdioCollector { id: kernelStdout; waitForEnd: true }
+    onExited: function(exitCode) {
+      var lines = String(kernelStdout.text || "").trim()
+      // No battery readable this way: stay out of it and let UPower decide.
+      var draining = lines === "" || /(^|\n)Discharging(\n|$)/.test(lines)
+      if (draining !== root.kernelDischarging) {
+        root.kernelDischarging = draining
+        root.evaluate()
+      }
+    }
+  }
   readonly property real secondsLeft: simulated ? simulated.percent * 60 : (device ? Number(device.timeToEmpty || 0) : 0)
   readonly property int stage: reading.discharging ? Model.stageFor(reading.percent, config.levels) : -1
   readonly property bool counting: tide.countdownEndsAt > 0
