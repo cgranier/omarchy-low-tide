@@ -40,6 +40,22 @@ does both; `omarchy-hibernation-available` tells you if it is ready). If resume 
 Pick levels that fit your battery. A worn battery can die while still reporting a few percent, so its safety net has to
 sit above that.
 
+## What this plugin can do to your system
+
+Low Tide can put your machine to sleep or turn it off, because that is its job. Exactly this, and nothing more:
+
+- It runs `systemctl hibernate` (or `systemctl poweroff`, if you choose that) as **your user**, through the same logind
+  permission the Omarchy menu's Hibernate entry uses. No `sudo`, no root, no helper service, nothing installed outside the
+  plugin folder.
+- It does so only when the battery is discharging at or below `actionAt`, and only after a visible countdown
+  (`countdownSec`, default 60 s) that **cancels the moment you plug in**.
+- `"action": "none"` removes the capability entirely: alerts and the frame still work, and no power command is ever run.
+- It makes no network requests, writes nothing to disk, and reads only UPower and its own `shell.json` entry.
+- The other commands it runs are `omarchy-notification-send` and `omarchy-notification-dismiss`.
+
+The single place a power command is issued is `act()` in `Service.qml`; in simulation mode that function returns before
+reaching it.
+
 ## Install
 
 ```bash
