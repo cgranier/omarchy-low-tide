@@ -3,9 +3,14 @@
 Low-battery alerts that get louder, a pulsing frame around your screen that you cannot miss, and an automatic
 hibernate before the battery gives out.
 
+![A red frame around the screen, a battery alert, and a hibernate countdown](preview.jpg)
+
 Omarchy warns you once, at 10%, with a toast that lasts thirty seconds. If you are heads-down, in a fullscreen app, or
 the battery is a few years old and falls off a cliff at 3%, that is how a session gets lost. Low Tide is built for that
 laptop.
+
+It also works on hardware where that built-in warning never fires at all: some laptops report "not on battery" to UPower
+while unplugged and draining. Low Tide reads the battery's own state instead.
 
 ## What it does
 
@@ -23,6 +28,8 @@ laptop.
 
 It will not hibernate in a loop: after resuming on battery, it waits until the charge has fallen a further 2%.
 
+![The Low Tide panel](docs/panel.png)
+
 ## Before you rely on it
 
 **Test hibernate once by hand**, plugged in, with nothing unsaved: Omarchy menu → System → Hibernate, then power on and
@@ -36,7 +43,7 @@ sit above that.
 ## Install
 
 ```bash
-omarchy plugin add <this-repo-url> --enable
+omarchy plugin add https://github.com/cgranier/omarchy-low-tide.git --enable
 ```
 
 Requires UPower (standard on Omarchy). To avoid two toasts at 10%, you can switch off Omarchy's own single warning with
