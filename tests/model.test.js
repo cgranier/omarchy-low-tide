@@ -46,9 +46,17 @@ test("waking up already low announces only the deepest level", () => {
 
 test("plugging in stands down and re-arms", () => {
   const { log, state } = run([[18, true], [17, false], [19, false], [18, true]])
-  assert.deepStrictEqual(log.map((e) => [e.type, e.at]), [["alert", 18], ["alert", 18]])
+  assert.deepStrictEqual(log.map((e) => [e.type, e.at]), [["alert", 18], ["clear", 17], ["alert", 18]])
   assert.strictEqual(state.announced, 0)
   assert.deepStrictEqual(run([[50, false], [-1, true]]).log, [])                       // no battery: nothing
+})
+
+test("going back on power takes the alerts down", () => {
+  const { log } = run([[18, true], [18, false], [18, false]])
+  assert.deepStrictEqual(log.map((e) => e.type), ["alert", "clear"])             // cleared once, not on every tick
+  assert.deepStrictEqual(run([[50, true], [50, false]]).log, [])                  // nothing was announced: nothing to clear
+  // During a countdown the cancel covers it; no separate clear.
+  assert.deepStrictEqual(run([[7, true], [7, true], [7, false]]).log.map((e) => e.type), ["alert", "countdown", "cancel"])
 })
 
 test("a gauge that wobbles around a level doesn't chatter", () => {

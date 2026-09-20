@@ -68,7 +68,10 @@ Item {
       if (config.notify) toast(Model.alertToast(effect, config, secondsLeft), effect.last ? Model.GLYPHS.critical : Model.GLYPHS.low)
     } else if (effect.type === "countdown") {
       toast(Model.countdownToast(effect), Model.GLYPHS.hibernate)
+    } else if (effect.type === "clear") {
+      dismissAlerts()
     } else if (effect.type === "cancel") {
+      dismissAlerts()
       Quickshell.execDetached(["omarchy-notification-dismiss", Model.actionVerb(config.action) + " in"])
       toast({ headline: "Cancelled", body: effect.reason === "charging" ? "On power again." : "Battery recovered.",
         urgency: "normal", bypassDnd: false, sticky: false }, Model.GLYPHS.charging)
@@ -83,6 +86,30 @@ Item {
     var command = ["omarchy-notification-send", "--app-name", t.bypassDnd ? "notify-send" : "Low Tide", "-g", glyph, "-u", t.urgency]
     if (!t.sticky) command = command.concat(["-t", "20000"])
     Quickshell.execDetached(command.concat([t.headline, t.body]))
+    // Omarchy never expires a critical notification, whatever timeout it asks
+    // for, and critical is the only kind that gets through Do Not Disturb. So a
+    // toast that should break through AND go away has to be taken down by hand.
+    if (t.urgency === "critical" && !t.sticky) {
+      expiring = expiring.concat([t.headline])
+      expireTimer.restart()
+    }
+  }
+
+  property var expiring: []
+
+  function dismissAlerts() {
+    Quickshell.execDetached(["omarchy-notification-dismiss", "Battery at"])
+    expiring = []
+  }
+
+  Timer {
+    id: expireTimer
+    interval: 20000
+    repeat: false
+    onTriggered: {
+      for (var i = 0; i < root.expiring.length; i++) Quickshell.execDetached(["omarchy-notification-dismiss", root.expiring[i]])
+      root.expiring = []
+    }
   }
 
   function act(action) {

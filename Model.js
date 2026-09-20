@@ -64,6 +64,7 @@ function stageFor(percent, levels) {
 //     actedAt          percent at which the action last ran, -1 never
 //   effects: { type: "alert", stage, percent } | { type: "countdown", seconds }
 //            | { type: "cancel", reason } | { type: "act", action }
+//            | { type: "clear" }   (on power again: take our alerts down)
 function step(previous, reading, config, nowMs) {
   // A fresh install has no stored state at all, so every field needs a default.
   var p = previous || {}
@@ -77,6 +78,9 @@ function step(previous, reading, config, nowMs) {
   // Plugged in, full, or no battery at all: stand down and re-arm everything.
   if (!reading.discharging || reading.percent < 0) {
     if (state.countdownEndsAt > 0) effects.push({ type: "cancel", reason: "charging" })
+    // Critical toasts never expire on their own, so a warning raised on
+    // battery would otherwise sit on screen long after the charger went in.
+    else if (state.announced >= 0) effects.push({ type: "clear" })
     return { state: { announced: -1, countdownEndsAt: 0, actedAt: -1 }, effects: effects }
   }
 
