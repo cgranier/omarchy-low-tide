@@ -7,6 +7,7 @@ function glyph(codePoint) {
 }
 
 var GLYPHS = {
+  tide: glyph(0xF078D),      // md-waves: the idle icon, deliberately not another battery
   low: glyph(0xF007A),       // md-battery-alert
   critical: glyph(0xF0083),  // md-battery-outline
   charging: glyph(0xF0084),  // md-battery-charging

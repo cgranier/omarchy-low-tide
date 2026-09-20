@@ -16,7 +16,7 @@
   },
   "barWidget": {
     "displayName": "Low Tide",
-    "description": "Invisible until the battery runs low; then shows the charge and time left in the urgent color, with a panel to hibernate now or test the alerts.",
+    "description": "A quiet wave while the battery is fine; the charge and time left in the urgent color when it is low. The panel shows status and battery health, and can hibernate now or test the alerts.",
     "category": "System",
     "aliases": ["low-tide", "battery-alert", "battery"],
     "allowMultiple": false,

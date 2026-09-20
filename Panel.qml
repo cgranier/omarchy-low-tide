@@ -26,7 +26,10 @@ Panel {
 
   readonly property var config: tide ? tide.config : Model.readConfig(null)
   readonly property bool low: tide ? (tide.stage >= 0 || tide.counting) : false
-  readonly property bool showInBar: low || opened || setting("alwaysShow", false) === true
+  // Visible by default, as a dimmed wave, so the panel is always reachable and
+  // you can tell the plugin is there. `hideWhenFine` brings back the stealthy
+  // behaviour: nothing in the bar until the battery is actually low.
+  readonly property bool showInBar: low || opened || setting("hideWhenFine", false) !== true
   readonly property var device: UPower.displayDevice
   readonly property string health: device && device.healthSupported ? Math.round(device.healthPercentage) + "%" : ""
 
@@ -79,7 +82,7 @@ Panel {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: !root.tide || !root.low ? Model.GLYPHS.low : (root.vertical ? Model.GLYPHS.low : root.tide.barText)
+    text: !root.tide || !root.low ? Model.GLYPHS.tide : (root.vertical ? Model.GLYPHS.low : root.tide.barText)
     active: root.low
     dimmed: !root.low
     tooltipText: root.opened ? "" : "Low Tide: " + (root.tide ? root.tide.status : "starting…")
@@ -116,7 +119,7 @@ Panel {
           iconComponent: Component {
             Text {
               textFormat: Text.PlainText
-              text: root.low ? Model.GLYPHS.critical : Model.GLYPHS.low
+              text: root.low ? Model.GLYPHS.critical : Model.GLYPHS.tide
               color: root.low ? root.urgent : root.foreground
               font.family: root.fontFamily
               font.pixelSize: Style.font.display

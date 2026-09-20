@@ -17,8 +17,9 @@ laptop.
 - **A last resort.** At 7% it starts a 60-second countdown — "Hibernating in 60 s. Plug in to cancel." — and then
   hibernates, so your session is on disk instead of lost. If hibernate fails, it falls back to a clean shutdown.
   Plugging in cancels at any point.
-- **A bar widget that stays invisible** until the battery is actually low (Omarchy's power widget already shows the
-  battery). Then it shows the charge and minutes left in the urgent color, or the countdown.
+- **A bar widget**: a small dimmed wave while the battery is fine (Omarchy's power widget already shows the charge, so
+  this isn't a second battery icon), turning into the charge and minutes left in the urgent color, or the countdown,
+  when it is low. Click it for status, battery health, **Hibernate now**, and **Test alerts**.
 
 It will not hibernate in a loop: after resuming on battery, it waits until the charge has fallen a further 2%.
 
@@ -58,7 +59,7 @@ jq '(.bar.layout.right[] | select(.id=="cgranier.lowtide")) += {"levels": [25, 1
 | `countdownSec` | `60` | Warning time before the action (10–600). |
 | `frame` | `true` | The pulsing screen frame. |
 | `notify` | `true` | The staged toasts. The countdown toast always shows. |
-| `alwaysShow` | `false` | Keep the bar icon visible even when the battery is fine. |
+| `hideWhenFine` | `false` | Hide the bar icon entirely until the battery is low. |
 
 ## Try it without draining your battery
 
