@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "cgranier.lowtide",
+  "name": "Low Tide",
+  "version": "0.1.0",
+  "author": "Carlos Granier",
+  "license": "MIT",
+  "description": "Staged low-battery alerts that get louder, a pulsing screen frame you can't miss, and an automatic hibernate before the battery gives out.",
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "service": "Service.qml",
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Low Tide",
+    "description": "Invisible until the battery runs low; then shows the charge and time left in the urgent color, with a panel to hibernate now or test the alerts.",
+    "category": "System",
+    "aliases": ["low-tide", "battery-alert", "battery"],
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
