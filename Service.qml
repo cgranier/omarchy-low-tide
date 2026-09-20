@@ -28,7 +28,12 @@ Item {
   readonly property var device: UPower.displayDevice
   readonly property var reading: simulated ? simulated : ({
     percent: device && device.isPresent ? Math.round(Number(device.percentage || 0) * 100) : -1,
-    discharging: !!(device && device.isPresent && UPower.onBattery && device.state === UPowerDeviceState.Discharging)
+    // The battery's own state, and nothing else. UPower's daemon-wide
+    // `onBattery` looks like the obvious extra check, but it is derived from
+    // the charger device, and some hardware (a Surface Pro 4, for one) reports
+    // "on-battery: no" while unplugged and draining. Requiring it would mean
+    // never alerting at all on exactly the machines that need this most.
+    discharging: !!(device && device.isPresent && device.state === UPowerDeviceState.Discharging)
   })
   readonly property real secondsLeft: simulated ? simulated.percent * 60 : (device ? Number(device.timeToEmpty || 0) : 0)
   readonly property int stage: reading.discharging ? Model.stageFor(reading.percent, config.levels) : -1
