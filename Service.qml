@@ -57,7 +57,7 @@ Item {
   Process {
     id: kernelProcess
     running: false
-    command: ["sh", "-c", 'for d in /sys/class/power_supply/*/; do [ "$(cat "$d/type" 2>/dev/null)" = Battery ] && cat "$d/status" 2>/dev/null; done; exit 0']
+    command: ["timeout", "5", "sh", "-c", 'for d in /sys/class/power_supply/*/; do [ "$(head -c 64 "$d/type" 2>/dev/null)" = Battery ] && head -c 64 "$d/status" 2>/dev/null; done; exit 0']
     stdout: StdioCollector { id: kernelStdout; waitForEnd: true }
     onExited: function(exitCode) {
       var lines = String(kernelStdout.text || "").trim()
@@ -221,12 +221,38 @@ Item {
     onTriggered: root.evaluate()
   }
 
-  FileView {
-    path: root.configHome + "/omarchy/shell.json"
-    watchChanges: true
-    printErrors: false
-    onFileChanged: reload()
-    onLoaded: root.loadConfig(text())
+  // A service plugin gets no settings injected, so it reads its own entry
+  // out of shell.json. The shell never opens the file itself: a bounded read
+  // runs when the file's modification time changes, checked every 10 s.
+  property string configStamp: ""
+
+  Timer {
+    interval: 10000
+    repeat: true
+    running: true
+    triggeredOnStart: true
+    onTriggered: if (!stampProcess.running) stampProcess.running = true
+  }
+
+  Process {
+    id: stampProcess
+    running: false
+    command: ["timeout", "5", "stat", "-c", "%Y %s", root.configHome + "/omarchy/shell.json"]
+    stdout: StdioCollector { id: stampOut; waitForEnd: true }
+    onExited: function(exitCode) {
+      var stamp = String(stampOut.text || "").trim()
+      if (exitCode !== 0 || stamp === root.configStamp) return
+      root.configStamp = stamp
+      if (!configProcess.running) configProcess.running = true
+    }
+  }
+
+  Process {
+    id: configProcess
+    running: false
+    command: ["timeout", "5", "head", "-c", "1000000", root.configHome + "/omarchy/shell.json"]
+    stdout: StdioCollector { id: configOut; waitForEnd: true }
+    onExited: function(exitCode) { if (exitCode === 0) root.loadConfig(String(configOut.text || "")) }
   }
 
   Process {

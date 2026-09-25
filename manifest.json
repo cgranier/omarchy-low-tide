@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "cgranier.lowtide",
   "name": "Low Tide",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Carlos Granier",
   "license": "MIT",
   "description": "Staged low-battery alerts that get louder, a pulsing screen frame you can't miss, and an automatic hibernate before the battery gives out.",
